@@ -62,9 +62,10 @@ class AuthController extends BaseController
         $email = trim((string) ($input['email'] ?? ''));
         $password = (string) ($input['password'] ?? '');
         $name = trim((string) ($input['name'] ?? ''));
+        $roleId = isset($input['role_id']) ? (int) $input['role_id'] : \App\Models\User::ROLE_CUSTOMER;
         if ($email === '' || $password === '' || $name === '') {
             $this->jsonError(
-                'Email, password and name required. Send JSON body: {"email":"...","password":"...","name":"..."} with header Content-Type: application/json'
+                'Email, password and name required. Send JSON body: {"email":"...","password":"...","name":"...","role_id":2|3} with header Content-Type: application/json'
             );
             return;
         }
@@ -76,7 +77,7 @@ class AuthController extends BaseController
             $this->jsonError('Password must be at least 6 characters');
             return;
         }
-        $result = $this->authService->register($email, $password, $name);
+        $result = $this->authService->register($email, $password, $name, $roleId);
         if (isset($result['error'])) {
             $this->jsonError($result['error']);
             return;

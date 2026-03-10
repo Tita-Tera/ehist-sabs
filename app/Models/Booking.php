@@ -79,6 +79,12 @@ class Booking extends Model
         return $stmt->execute([$status, $id]);
     }
 
+    public function updateTime(int $id, string $slotDate, string $startTime, string $endTime): bool
+    {
+        $stmt = self::pdo()->prepare("UPDATE `{$this->table}` SET slot_date = ?, start_time = ?, end_time = ? WHERE id = ?");
+        return $stmt->execute([$slotDate, $startTime, $endTime, $id]);
+    }
+
     /** Check for overlapping booking (same provider, same date, overlapping time). */
     public function hasOverlap(int $providerId, string $slotDate, string $startTime, string $endTime, ?int $excludeId = null): bool
     {

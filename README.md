@@ -53,25 +53,26 @@ ehist-sabs/
 │   ├── Services/         # Business logic
 │   └── Middleware/       # Authentication & role-based access
 │
-├── public/               # Frontend (what users interact with)
-│   ├── index.php
-│   ├── login.php
-│   ├── register.php
-│   ├── dashboard.php
-│   ├── booking.php
-│   └── assets/           # CSS, JS, Images
+├── public/               # Frontend & API entry (SPA + API)
+│   ├── index.php         # Single-page app (login, book, my bookings, provider, admin)
+│   ├── api.php           # REST-style API entry (routes to app/)
+│   ├── style.css
+│   ├── app.js
+│   ├── api.js
+│   └── .htaccess
 │
-├── database/             # Database schema & sample data
-│   └── schema.sql
+├── database/             # Schema, migrations, seed data
+│   ├── schema.sql
+│   ├── seed.sql
+│   └── migrations/
 │
 ├── docs/                 # Project documentation
-│   ├── 01-requirements/
-│   ├── 02-analysis/
-│   ├── 03-design/
-│   ├── 04-testing/
-│   └── 05-user-manual/
+│   ├── API.md
+│   ├── FRONTEND-CONTRACT.md
+│   ├── apache-setup.md
+│   └── postman-collection.json
 │
-├── presentation/         # Slides for defense/presentation
+├── presentation/         # Speaker notes & Q&A for defense/presentation
 │
 ├── README.md             # Project description & instructions
 └── .gitignore            # Files to ignore in GitHub

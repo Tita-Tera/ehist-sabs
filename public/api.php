@@ -8,10 +8,14 @@ declare(strict_types=1);
  */
 header('Content-Type: application/json; charset=utf-8');
 
-// Parse path first (no DB/session needed)
-$path = trim($_SERVER['PATH_INFO'] ?? $_SERVER['REQUEST_URI'] ?? '', '/');
-$path = preg_replace('#^api\.php/?#', '', $path);
-$path = parse_url($path ?? '', PHP_URL_PATH) ?: $path;
+// Parse path first (no DB/session needed). Support subdirs: .../api.php/bookings -> bookings
+$rawPath = $_SERVER['PATH_INFO'] ?? $_SERVER['REQUEST_URI'] ?? '';
+$path = trim(parse_url($rawPath, PHP_URL_PATH) ?: $rawPath, '/');
+if (preg_match('#api\.php/?(.*)$#', $path, $m)) {
+    $path = trim($m[1] ?? '', '/');
+} else {
+    $path = preg_replace('#^api\.php/?#', '', $path);
+}
 $path = trim((string) $path, '/');
 $segments = $path !== '' ? explode('/', $path) : [];
 
@@ -77,7 +81,7 @@ $timeSlotModel     = new TimeSlot();
 $notificationModel = new Notification();
 $passwordResetModel = new PasswordResetToken();
 $authService       = new AuthService($userModel, $passwordResetModel);
-$bookingService    = new BookingService($bookingModel, $authService, $notificationModel);
+$bookingService    = new BookingService($bookingModel, $authService, $notificationModel, $timeSlotModel);
 $timeSlotService   = new TimeSlotService($timeSlotModel, $bookingModel, $authService);
 $authController    = new AuthController($authService);
 $bookingController = new BookingController($bookingService);
@@ -249,6 +253,10 @@ try {
             }
             if ($id !== null && $sub === 'status') {
                 $bookingController->updateStatus($id);
+                return;
+            }
+            if ($id !== null && $sub === 'reschedule') {
+                $bookingController->reschedule($id);
                 return;
             }
             if ($id === null && $_SERVER['REQUEST_METHOD'] === 'POST') {

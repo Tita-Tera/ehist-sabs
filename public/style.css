@@ -9,33 +9,232 @@
 body {
     background-color: #f4f7f6;
     color: #333;
+    min-height: 100vh;
 }
 
-.container {
-    max-width: 900px;
+.hidden {
+    display: none !important;
+}
+
+/* App shell */
+.app {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Header */
+.header {
+    background: #2c3e50;
+    color: #fff;
+    padding: 12px 20px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.header-inner {
+    max-width: 1100px;
     margin: 0 auto;
-    padding: 20px;
-}
-
-header h1 {
-    text-align: center;
-    margin-bottom: 30px;
-    color: #2c3e50;
-}
-
-.main-content {
-    display: grid;
-    grid-template-columns: 1fr 1fr; /* Two columns */
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
     gap: 20px;
+    flex-wrap: wrap;
 }
 
-/* Mobile Responsive */
+.logo {
+    color: #fff;
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 1.2rem;
+}
+
+.logo:hover {
+    color: #ecf0f1;
+}
+
+.nav {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.user-name {
+    font-size: 0.9rem;
+    opacity: 0.9;
+    margin-right: 8px;
+}
+
+.btn-icon {
+    width: 36px;
+    height: 36px;
+    border: 1px solid rgba(255,255,255,0.3);
+    border-radius: 6px;
+    background: rgba(255,255,255,0.1);
+    color: #fff;
+    cursor: pointer;
+    font-size: 1rem;
+}
+
+.btn-icon:hover {
+    background: rgba(255,255,255,0.2);
+}
+
+.btn-icon::before {
+    content: "🔔";
+}
+
+.nav-link {
+    color: rgba(255,255,255,0.95);
+    text-decoration: none;
+    font-size: 0.95rem;
+    padding: 6px 12px;
+    border-radius: 4px;
+}
+
+.nav-link:hover {
+    background: rgba(255,255,255,0.15);
+}
+
+.btn-logout {
+    background: transparent;
+    border: 1px solid rgba(255,255,255,0.5);
+    color: #fff;
+    padding: 6px 14px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9rem;
+}
+
+.btn-logout:hover {
+    background: rgba(255,255,255,0.15);
+}
+
+/* Notification dropdown */
+.notification-dropdown {
+    position: absolute;
+    top: 100%;
+    right: 20px;
+    margin-top: 4px;
+    min-width: 280px;
+    max-width: 360px;
+    max-height: 320px;
+    overflow-y: auto;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+    padding: 8px;
+    z-index: 200;
+}
+
+.notification-item {
+    padding: 10px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    margin-bottom: 4px;
+    border: 1px solid #eee;
+}
+
+.notification-item:hover {
+    background: #f8f9fa;
+}
+
+.notification-item .small {
+    font-size: 0.85rem;
+    color: #666;
+}
+
+/* Global message */
+.global-message {
+    padding: 12px 20px;
+    text-align: center;
+    font-weight: 500;
+    position: sticky;
+    top: 0;
+    z-index: 99;
+}
+
+.global-message.success {
+    background: #d4edda;
+    color: #155724;
+}
+
+.global-message.error {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+/* Main content area */
+.main {
+    flex: 1;
+    max-width: 1100px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 24px 20px;
+}
+
+/* Views */
+.view {
+    width: 100%;
+}
+
+.card-view {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding-top: 40px;
+}
+
+.card-view .card {
+    width: 100%;
+    max-width: 400px;
+}
+
+.card-view .card h1 {
+    margin-bottom: 20px;
+    color: #2c3e50;
+    font-size: 1.5rem;
+}
+
+.form-footer {
+    margin-top: 16px;
+    text-align: center;
+    font-size: 0.95rem;
+    color: #666;
+}
+
+.form-footer a {
+    color: #3498db;
+    text-decoration: none;
+}
+
+.form-footer a:hover {
+    text-decoration: underline;
+}
+
+/* Two-column layout (book view) */
+.two-cols {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+}
+
 @media (max-width: 768px) {
-    .main-content {
+    .two-cols {
         grid-template-columns: 1fr;
     }
 }
 
+.main-content .card h2 {
+    margin-bottom: 20px;
+    color: #34495e;
+    border-bottom: 2px solid #f4f7f6;
+    padding-bottom: 10px;
+}
+
+/* Card */
 .card {
     background: white;
     padding: 25px;
@@ -50,7 +249,7 @@ header h1 {
     padding-bottom: 10px;
 }
 
-/* Form Styling */
+/* Form */
 .form-group {
     margin-bottom: 15px;
 }
@@ -62,7 +261,7 @@ header h1 {
     font-size: 0.9rem;
 }
 
-.form-group input, 
+.form-group input,
 .form-group select {
     width: 100%;
     padding: 10px;
@@ -80,6 +279,70 @@ header h1 {
     flex: 1;
 }
 
+.hint {
+    font-size: 0.9rem;
+    color: #888;
+    margin-top: 6px;
+}
+
+.slot-choice {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.radio-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.radio-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: normal;
+    cursor: pointer;
+}
+
+.booking-actions {
+    display: inline-flex;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.booking-item.status-pending { border-left-color: #f39c12; }
+.booking-item.status-approved { border-left-color: #27ae60; }
+.booking-item.status-rejected { border-left-color: #e74c3c; }
+
+/* Slot list (time slot buttons) */
+.slot-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.slot-btn {
+    padding: 10px 16px;
+    border: 1px solid #3498db;
+    background: #fff;
+    color: #3498db;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.95rem;
+}
+
+.slot-btn:hover {
+    background: #e8f4fc;
+}
+
+.slot-btn.selected {
+    background: #3498db;
+    color: #fff;
+}
+
+/* Buttons */
 .btn-primary {
     width: 100%;
     padding: 12px;
@@ -92,11 +355,246 @@ header h1 {
     transition: background 0.3s;
 }
 
-.btn-primary:hover {
+.btn-primary:hover:not(:disabled) {
     background-color: #2980b9;
 }
 
-/* List Styling */
+.btn-primary:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+.btn-delete {
+    background-color: #e74c3c;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 0.85rem;
+}
+
+.btn-delete:hover {
+    background-color: #c0392b;
+}
+
+.btn-sm {
+    padding: 4px 10px;
+    font-size: 0.8rem;
+}
+
+.btn-approve {
+    background: #27ae60;
+    color: #fff;
+    border: none;
+    padding: 4px 10px;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 0.8rem;
+}
+
+.btn-approve:hover {
+    background: #219a52;
+}
+
+.btn-reject {
+    background: #e67e22;
+    color: #fff;
+    border: none;
+    padding: 4px 10px;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 0.8rem;
+}
+
+.btn-reject:hover {
+    background: #d35400;
+}
+
+/* Preview list (book view sidebar) */
+.preview-list {
+    min-height: 120px;
+}
+
+.preview-item {
+    padding: 10px 12px;
+    background: #f9f9f9;
+    border-left: 4px solid #3498db;
+    border-radius: 4px;
+    margin-bottom: 10px;
+    font-size: 0.9rem;
+}
+
+/* Booking list */
+.booking-list {
+    min-height: 80px;
+}
+
+.booking-item {
+    background: #f9f9f9;
+    border-left: 5px solid #3498db;
+    padding: 15px;
+    margin-bottom: 15px;
+    border-radius: 4px;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.booking-info {
+    font-size: 0.95rem;
+    color: #333;
+}
+
+.booking-item .btn-delete {
+    position: static;
+}
+
+/* Tabs */
+.tabs {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 20px;
+    border-bottom: 1px solid #ddd;
+}
+
+.tab {
+    padding: 10px 20px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    font-size: 1rem;
+    color: #666;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+}
+
+.tab:hover {
+    color: #2c3e50;
+}
+
+.tab.active {
+    color: #3498db;
+    font-weight: 600;
+    border-bottom-color: #3498db;
+}
+
+.tab-panel {
+    width: 100%;
+}
+
+/* Provider / Admin lists */
+.list-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    background: #f9f9f9;
+    border-radius: 6px;
+    margin-bottom: 8px;
+}
+
+.list-row span {
+    flex: 1;
+}
+
+.muted {
+    color: #888;
+    font-size: 0.9rem;
+}
+
+.form-inline {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid #eee;
+}
+
+.form-inline input {
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 1rem;
+}
+
+.form-inline .btn-primary {
+    width: auto;
+}
+
+.slot-list-rows .list-row {
+    margin-top: 8px;
+}
+
+/* Admin overview */
+.overview-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 16px;
+}
+
+.stat {
+    background: #f0f4f8;
+    padding: 16px;
+    border-radius: 8px;
+    text-align: center;
+}
+
+.stat-value {
+    display: block;
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #2c3e50;
+}
+
+/* Table */
+.table-wrap {
+    overflow-x: auto;
+    margin-top: 12px;
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.data-table th,
+.data-table td {
+    padding: 10px 12px;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+}
+
+.data-table th {
+    background: #f8f9fa;
+    font-weight: 600;
+    color: #34495e;
+}
+
+.data-table tr:hover {
+    background: #f9f9f9;
+}
+
+/* Loading & empty */
+.loading {
+    color: #888;
+    font-style: italic;
+    padding: 20px;
+}
+
+.empty-msg {
+    text-align: center;
+    color: #888;
+    font-style: italic;
+    padding: 24px;
+}
+
+/* Legacy (keep for any leftover classes) */
 .appointment-item {
     background: #f9f9f9;
     border-left: 5px solid #3498db;
@@ -115,27 +613,4 @@ header h1 {
     font-size: 0.9rem;
     color: #666;
     margin-bottom: 3px;
-}
-
-.btn-delete {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    background-color: #e74c3c;
-    color: white;
-    border: none;
-    padding: 5px 10px;
-    border-radius: 3px;
-    cursor: pointer;
-    font-size: 0.8rem;
-}
-
-.btn-delete:hover {
-    background-color: #c0392b;
-}
-
-.empty-msg {
-    text-align: center;
-    color: #888;
-    font-style: italic;
 }

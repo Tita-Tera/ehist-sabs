@@ -20,6 +20,26 @@ class TimeSlot extends Model
         return $stmt->fetchAll();
     }
 
+    /** True if provider has an available slot matching this exact date and time range. */
+    public function existsAvailableSlot(int $providerId, string $slotDate, string $startTime, string $endTime): bool
+    {
+        $startTime = $this->normalizeTime($startTime);
+        $endTime   = $this->normalizeTime($endTime);
+        $stmt = self::pdo()->prepare(
+            "SELECT 1 FROM `{$this->table}` WHERE provider_id = ? AND slot_date = ? AND is_available = 1 AND start_time = ? AND end_time = ? LIMIT 1"
+        );
+        $stmt->execute([$providerId, $slotDate, $startTime, $endTime]);
+        return (bool) $stmt->fetch();
+    }
+
+    private function normalizeTime(string $time): string
+    {
+        if (preg_match('/^\d{1,2}:\d{2}$/', $time)) {
+            return $time . ':00';
+        }
+        return $time;
+    }
+
     /** All slots for a provider, optionally filtered by date range. */
     public function getByProvider(int $providerId, ?string $dateFrom = null, ?string $dateTo = null): array
     {

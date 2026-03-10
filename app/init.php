@@ -14,9 +14,5 @@ $pdo = require __DIR__ . '/config/database.php';
 // Make PDO available to all models
 \App\Models\Model::setPdo($pdo);
 
-// Start session for auth
-if (session_status() === PHP_SESSION_NONE) {
-    $config = require __DIR__ . '/config/config.php';
-    session_name($config['session']['name'] ?? 'ehist_sabs_session');
-    session_start();
-}
+// Session is started on first use in AuthService::ensureSession() so that
+// register (and health) work even when session directory is not writable.

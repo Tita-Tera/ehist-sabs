@@ -6,17 +6,20 @@ namespace App\Services;
 
 use App\Models\Booking;
 use App\Models\Notification;
+use App\Models\TimeSlot;
 use App\Models\User;
 
 /**
  * Booking business logic: create, list, cancel, approve/reject with conflict checks.
+ * Bookings on predefined time slots are auto-approved; custom times stay pending for provider approval.
  */
 class BookingService
 {
     public function __construct(
         private Booking $bookingModel,
         private AuthService $authService,
-        private ?Notification $notificationModel = null
+        private ?Notification $notificationModel = null,
+        private ?TimeSlot $timeSlotModel = null
     ) {
     }
 
@@ -79,6 +82,9 @@ class BookingService
         if ($this->bookingModel->hasOverlap($providerId, $slotDate, $startTime, $endTime, null)) {
             return ['error' => 'Time slot is no longer available (overlap)'];
         }
+        $isPredefinedSlot = $this->timeSlotModel !== null
+            && $this->timeSlotModel->existsAvailableSlot($providerId, $slotDate, $startTime, $endTime);
+        $status = $isPredefinedSlot ? Booking::STATUS_APPROVED : Booking::STATUS_PENDING;
         $bookingId = $this->bookingModel->create([
             'customer_id' => (int) $user['id'],
             'provider_id' => $providerId,
@@ -86,8 +92,9 @@ class BookingService
             'slot_date'   => $slotDate,
             'start_time'  => $startTime,
             'end_time'    => $endTime,
+            'status'      => $status,
         ]);
-        return ['booking_id' => $bookingId];
+        return ['booking_id' => $bookingId, 'status' => $status];
     }
 
     public function updateStatus(int $bookingId, string $status): array
@@ -100,12 +107,16 @@ class BookingService
         if (!in_array($status, $allowed, true)) {
             return ['error' => 'Invalid status'];
         }
-        if ((int) $user['role_id'] !== User::ROLE_ADMIN) {
-            return ['error' => 'Only administrators can approve/reject', 'code' => 403];
-        }
         $booking = $this->bookingModel->find($bookingId);
         if ($booking === null) {
             return ['error' => 'Booking not found', 'code' => 404];
+        }
+        $roleId = (int) $user['role_id'];
+        $uid = (int) $user['id'];
+        $canAct = ($roleId === User::ROLE_ADMIN)
+            || ($roleId === User::ROLE_PROVIDER && (int) $booking['provider_id'] === $uid);
+        if (!$canAct) {
+            return ['error' => 'Only the provider or an administrator can approve/reject this booking', 'code' => 403];
         }
         $this->bookingModel->updateStatus($bookingId, $status);
         $this->notifyBookingStatus(
@@ -113,6 +124,48 @@ class BookingService
             $bookingId,
             $status,
             "Booking #{$bookingId} " . ($status === Booking::STATUS_APPROVED ? 'approved' : 'rejected')
+        );
+        return [];
+    }
+
+    /** Provider (or admin) can reschedule a pending booking to a new date/time. */
+    public function reschedule(int $bookingId, string $slotDate, string $startTime, string $endTime): array
+    {
+        $user = $this->authService->currentUser();
+        if ($user === null) {
+            return ['error' => 'Not authenticated', 'code' => 401];
+        }
+        $booking = $this->bookingModel->find($bookingId);
+        if ($booking === null) {
+            return ['error' => 'Booking not found', 'code' => 404];
+        }
+        if ((string) $booking['status'] !== Booking::STATUS_PENDING) {
+            return ['error' => 'Only pending bookings can be rescheduled', 'code' => 400];
+        }
+        $roleId = (int) $user['role_id'];
+        $uid = (int) $user['id'];
+        $canAct = ($roleId === User::ROLE_ADMIN)
+            || ($roleId === User::ROLE_PROVIDER && (int) $booking['provider_id'] === $uid);
+        if (!$canAct) {
+            return ['error' => 'Only the provider or an administrator can reschedule this booking', 'code' => 403];
+        }
+        $d = \DateTime::createFromFormat('Y-m-d', $slotDate);
+        if (!$d || $d->format('Y-m-d') !== $slotDate) {
+            return ['error' => 'Invalid slot_date format. Use Y-m-d'];
+        }
+        if (!preg_match('/^\d{1,2}:\d{2}(?::\d{2})?$/', $startTime) || !preg_match('/^\d{1,2}:\d{2}(?::\d{2})?$/', $endTime)) {
+            return ['error' => 'Invalid start_time or end_time. Use H:i or H:i:s'];
+        }
+        $providerId = (int) $booking['provider_id'];
+        if ($this->bookingModel->hasOverlap($providerId, $slotDate, $startTime, $endTime, $bookingId)) {
+            return ['error' => 'The new time slot overlaps with another booking'];
+        }
+        $this->bookingModel->updateTime($bookingId, $slotDate, $startTime, $endTime);
+        $this->notifyBookingStatus(
+            (int) $booking['customer_id'],
+            $bookingId,
+            'rescheduled',
+            "Booking #{$bookingId} has been rescheduled to {$slotDate} {$startTime}–{$endTime}."
         );
         return [];
     }
