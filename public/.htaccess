@@ -1,0 +1,6 @@
+# ehist-sabs: public directory (Apache)
+DirectoryIndex index.php
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /
+</IfModule>
