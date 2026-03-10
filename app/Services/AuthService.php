@@ -55,8 +55,15 @@ class AuthService
         return $this->userModel->find((int) $id);
     }
 
-    public function register(string $email, string $password, string $name): array
+    /**
+     * Register a new user. Role must be ROLE_CUSTOMER or ROLE_PROVIDER (admin cannot self-register).
+     */
+    public function register(string $email, string $password, string $name, int $roleId = User::ROLE_CUSTOMER): array
     {
+        $allowedRoles = [User::ROLE_CUSTOMER, User::ROLE_PROVIDER];
+        if (!in_array($roleId, $allowedRoles, true)) {
+            return ['error' => 'Invalid role. Choose Customer or Provider.'];
+        }
         if ($this->userModel->findByEmail($email) !== null) {
             return ['error' => 'Email already registered'];
         }
@@ -64,12 +71,23 @@ class AuthService
         if ($hash === false) {
             return ['error' => 'Password hashing failed'];
         }
-        $userId = $this->userModel->create([
-            'email'    => $email,
-            'password' => $hash,
-            'name'     => $name,
-            'role_id'  => User::ROLE_CUSTOMER,
-        ]);
+        try {
+            $userId = $this->userModel->create([
+                'email'    => $email,
+                'password' => $hash,
+                'name'     => $name,
+                'role_id'  => $roleId,
+            ]);
+        } catch (\PDOException $e) {
+            $code = $e->getCode();
+            if ($code === '23000' || strpos((string) $e->getMessage(), 'Duplicate') !== false) {
+                return ['error' => 'Email already registered'];
+            }
+            if ($code === '23000' && strpos((string) $e->getMessage(), 'foreign key') !== false) {
+                return ['error' => 'Registration failed. Please ensure the database is set up (run schema and seed).'];
+            }
+            throw $e;
+        }
         return ['user_id' => $userId];
     }
 
@@ -114,6 +132,8 @@ class AuthService
     private function ensureSession(): void
     {
         if (session_status() === PHP_SESSION_NONE) {
+            $config = require dirname(__DIR__) . '/config/config.php';
+            session_name($config['session']['name'] ?? 'ehist_sabs_session');
             session_start();
         }
     }

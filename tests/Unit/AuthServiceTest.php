@@ -83,4 +83,32 @@ class AuthServiceTest extends TestCase
         $this->assertSame(42, $result['user_id']);
         $this->assertArrayNotHasKey('error', $result);
     }
+
+    public function test_register_with_provider_role_passes_role_to_create(): void
+    {
+        $userModel = $this->createMock(User::class);
+        $userModel->method('findByEmail')->willReturn(null);
+        $userModel->method('create')->with($this->callback(function (array $data): bool {
+            return isset($data['role_id']) && (int) $data['role_id'] === User::ROLE_PROVIDER;
+        }))->willReturn(99);
+
+        $auth = new AuthService($userModel);
+        $result = $auth->register('provider@example.com', 'password123', 'Provider User', User::ROLE_PROVIDER);
+
+        $this->assertArrayHasKey('user_id', $result);
+        $this->assertSame(99, $result['user_id']);
+    }
+
+    public function test_register_rejects_invalid_role(): void
+    {
+        $userModel = $this->createMock(User::class);
+        $userModel->method('findByEmail')->willReturn(null);
+        $userModel->expects($this->never())->method('create');
+
+        $auth = new AuthService($userModel);
+        $result = $auth->register('admin@example.com', 'password123', 'Hacker', User::ROLE_ADMIN);
+
+        $this->assertArrayHasKey('error', $result);
+        $this->assertSame('Invalid role. Choose Customer or Provider.', $result['error']);
+    }
 }

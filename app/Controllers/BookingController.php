@@ -20,7 +20,7 @@ class BookingController extends BaseController
     {
         [$limit, $offset] = $this->getLimitOffset();
         $bookings = $this->bookingService->getBookingsForCurrentUser($limit, $offset);
-        $this->json(['bookings' => $bookings]);
+        $this->json(['bookings' => is_array($bookings) ? $bookings : []]);
     }
 
     public function create(): void
@@ -35,7 +35,11 @@ class BookingController extends BaseController
             $this->jsonError($result['error'], $result['code'] ?? 400);
             return;
         }
-        $this->json(['success' => true, 'booking_id' => $result['booking_id']]);
+        $this->json([
+            'success'    => true,
+            'booking_id' => $result['booking_id'],
+            'status'     => $result['status'] ?? 'pending',
+        ]);
     }
 
     public function updateStatus(int $id): void
@@ -57,6 +61,24 @@ class BookingController extends BaseController
     public function cancel(int $id): void
     {
         $result = $this->bookingService->cancel($id);
+        if (isset($result['error'])) {
+            $this->jsonError($result['error'], $result['code'] ?? 400);
+            return;
+        }
+        $this->json(['success' => true]);
+    }
+
+    public function reschedule(int $id): void
+    {
+        if ($this->getRequestMethod() !== 'POST' && $this->getRequestMethod() !== 'PATCH') {
+            $this->jsonError('Method not allowed', 405);
+            return;
+        }
+        $input = $this->getJsonInput();
+        $slotDate = trim((string) ($input['slot_date'] ?? ''));
+        $startTime = trim((string) ($input['start_time'] ?? ''));
+        $endTime = trim((string) ($input['end_time'] ?? ''));
+        $result = $this->bookingService->reschedule($id, $slotDate, $startTime, $endTime);
         if (isset($result['error'])) {
             $this->jsonError($result['error'], $result['code'] ?? 400);
             return;
